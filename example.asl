@@ -9,7 +9,6 @@ goalRelative(Gx, Gy)[necessary] :- location(X, Y) & locGoalRel(location(X,Y), lo
 
 
 /** These are the beliefs generated for the map that are added automatically to the BB **/
-/** This file is not loaded by the agent. It is just the output for debugging purposes and will be overwritten. **/
 // Map Location Mappings
 locPercept(location(0,0),[percept(up,none),percept(down,none),percept(right,none),percept(left,none)]).
 locPercept(location(0,1),[percept(up,none),percept(down,none),percept(right,none),percept(left,none)]).
