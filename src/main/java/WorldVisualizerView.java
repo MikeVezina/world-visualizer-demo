@@ -1,3 +1,4 @@
+import jason.util.Config;
 import model.WorldTreeModel;
 
 import javax.swing.*;
@@ -15,8 +16,10 @@ public class WorldVisualizerView extends JFrame {
 
         treeModel = new WorldTreeModel();
         tree = new JTree(treeModel);
+        tree.setScrollsOnExpand(true);
 
-        this.add(new JScrollPane(tree));
+        JScrollPane scrollPane = new JScrollPane(tree);
+        this.add(scrollPane);
 
 
         JPanel evaluationPanel = new JPanel();
@@ -26,7 +29,7 @@ public class WorldVisualizerView extends JFrame {
         });
         evaluationPanel.add(reloadASlButton);
         this.add(evaluationPanel);
-        tree.setPreferredSize(new Dimension(500, 500));
+        scrollPane.setPreferredSize(new Dimension(500, 500));
         this.setVisible(true);
         this.pack();
 
@@ -38,6 +41,8 @@ public class WorldVisualizerView extends JFrame {
 
     public static void main(String[] args)
     {
+        // Disable Jason web server
+        Config.get().setProperty(Config.START_WEB_MI, "false");
         new WorldVisualizerView();
     }
 }
