@@ -1,13 +1,20 @@
 package model;
 
 import epistemic.ManagedWorlds;
+import epistemic.wrappers.NormalizedWrappedLiteral;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class WorldTreeModel extends DefaultTreeModel {
     private MockAgent mockAgent;
     private final DefaultMutableTreeNode root;
+
     public WorldTreeModel() {
         this(new DefaultMutableTreeNode("All Worlds"));
     }
@@ -18,8 +25,7 @@ public class WorldTreeModel extends DefaultTreeModel {
         refreshAgent();
     }
 
-    public synchronized void refreshAgent()
-    {
+    public synchronized void refreshAgent() {
         removeChildren();
         this.mockAgent = new MockAgent("example.asl");
         buildTree();
@@ -34,15 +40,21 @@ public class WorldTreeModel extends DefaultTreeModel {
         System.out.println("Rebuilding Worlds Tree");
         ManagedWorlds worlds = this.mockAgent.getEpistemicDistribution().getManagedWorlds();
 
-        for(var world : worlds)
-        {
-
+        for (var world : worlds) {
 
             var worldNode = new DefaultMutableTreeNode(world);
-            for(var prop : world)
-            {
-                worldNode.add(new DefaultMutableTreeNode(prop.getCleanedLiteral()));
+            // Sort by proposition toString().
+            LinkedHashSet<String> sortedPropositions = world.stream()
+                    .map(l -> l.getCleanedLiteral().toString())
+                    .sorted(Comparator.comparing(l -> l))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+
+            for (var prop : sortedPropositions) {
+                worldNode.add(new DefaultMutableTreeNode(prop));
             }
+
+            //
+            worldNode.setUserObject(sortedPropositions);
 
             root.add(worldNode);
         }
@@ -52,7 +64,6 @@ public class WorldTreeModel extends DefaultTreeModel {
         this.reload();
 
     }
-
 
 
 }
