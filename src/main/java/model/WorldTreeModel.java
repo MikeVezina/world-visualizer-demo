@@ -1,14 +1,11 @@
 package model;
 
 import epistemic.ManagedWorlds;
-import epistemic.wrappers.NormalizedWrappedLiteral;
+import epistemic.World;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class WorldTreeModel extends DefaultTreeModel {
@@ -40,14 +37,31 @@ public class WorldTreeModel extends DefaultTreeModel {
         System.out.println("Rebuilding Worlds Tree");
         ManagedWorlds worlds = this.mockAgent.getEpistemicDistribution().getManagedWorlds();
 
-        for (var world : worlds) {
+        List<World> worldList = new ArrayList<>(worlds);
+        Map<World, LinkedHashSet<String>> sortedPropositionsMap = new HashMap<>();
+
+        worldList.sort(Collections.reverseOrder(Comparator.comparing((world) -> {
+            LinkedHashSet<String> sortedPropositions = sortedPropositionsMap.get(world);
+
+            if (sortedPropositions == null)
+                sortedPropositions = world.getValuation().stream()
+                        .map(l -> l.getCleanedLiteral().toString())
+                        .sorted(Comparator.comparing(l -> l))
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+
+
+            sortedPropositionsMap.putIfAbsent(world, sortedPropositions);
+            return sortedPropositions.toString();
+        })));
+
+        for (var world : worldList) {
+//
+//            if(!world.evaluate(ASSyntax.createLiteral("cards", ASSyntax.createString("Bob"), ASSyntax.createString("AA"))))
+//                continue;
 
             var worldNode = new DefaultMutableTreeNode(world);
             // Sort by proposition toString().
-            LinkedHashSet<String> sortedPropositions = world.stream()
-                    .map(l -> l.getCleanedLiteral().toString())
-                    .sorted(Comparator.comparing(l -> l))
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            var sortedPropositions = sortedPropositionsMap.get(world);
 
             for (var prop : sortedPropositions) {
                 worldNode.add(new DefaultMutableTreeNode(prop));
@@ -60,6 +74,11 @@ public class WorldTreeModel extends DefaultTreeModel {
         }
 
         root.setUserObject("All Worlds (" + worlds.size() + ")");
+
+        // Print worlds to string
+        var rootIter = root.breadthFirstEnumeration().asIterator();
+        while (rootIter.hasNext())
+            System.out.println(rootIter.next().toString());
 
         this.reload();
 
